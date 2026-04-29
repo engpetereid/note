@@ -1,4 +1,4 @@
-# 📿 Spiritual Habit Tracker
+# Spiritual Habit Tracker
 
 A mobile-first web application for tracking daily spiritual disciplines. Built for Coptic Orthodox Christians, the app provides a personalized daily checklist of spiritual activities (Agpeya prayers, Bible readings, church attendance, and more), paired with a smart daily Bible reading plan and progress analytics.
 
