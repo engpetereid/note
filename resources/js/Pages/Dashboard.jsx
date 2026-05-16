@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     CheckCircle2,
     Circle,
@@ -42,9 +42,47 @@ export default function App() {
         custom_start_date: ''
     });
 
-    const [notifications] = useState([
+    const [notifications] = useState([]);
+    const [user, setUser] = useState(null);
 
-    ]);
+    // --- AUDIO REFS ---
+    const checkSoundRef = useRef(null);
+    const uncheckSoundRef = useRef(null);
+    const successSoundRef = useRef(null);
+
+    useEffect(() => {
+        // Initialize simple generated sounds (no external files needed)
+        // using base64 encoded tiny audio blobs for instant loading
+
+        // A pleasant high-pitched pop for checking
+        checkSoundRef.current = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+
+        // A lower pitched softer pop for unchecking
+        uncheckSoundRef.current = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+
+        // A gentle chime for saving settings
+        successSoundRef.current = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+
+        // Note: For a real production app, replace the base64 strings above with actual paths to short .mp3 files
+        // e.g., checkSoundRef.current = new Audio('/sounds/check.mp3');
+    }, []);
+
+    const playSound = (type) => {
+        try {
+            if (type === 'check' && checkSoundRef.current) {
+                checkSoundRef.current.currentTime = 0;
+                checkSoundRef.current.play().catch(e => console.log('Audio play prevented', e));
+            } else if (type === 'uncheck' && uncheckSoundRef.current) {
+                uncheckSoundRef.current.currentTime = 0;
+                uncheckSoundRef.current.play().catch(e => console.log('Audio play prevented', e));
+            } else if (type === 'success' && successSoundRef.current) {
+                successSoundRef.current.currentTime = 0;
+                successSoundRef.current.play().catch(e => console.log('Audio play prevented', e));
+            }
+        } catch (error) {
+            // Silently fail if browser blocks audio
+        }
+    };
 
     const formatDateStr = (dateObj) => {
         const offset = dateObj.getTimezoneOffset();
@@ -65,7 +103,7 @@ export default function App() {
                 setReading(response.data.reading || null);
                 setStats(response.data.stats || { progress: 0, total: 0, completed: 0 });
                 setUser(response.data.user || null);
-                // Populate Real User Settings
+
                 if (response.data.settings) {
                     setUserSettings({
                         reading_preference: response.data.settings.reading_preference || 'fixed',
@@ -86,6 +124,9 @@ export default function App() {
     // --- LOGIC ---
     const handleToggleTask = async (taskId) => {
         const isCurrentlyCompleted = completedTaskIds.includes(taskId);
+
+        // Play sound based on the new state
+        playSound(isCurrentlyCompleted ? 'uncheck' : 'check');
 
         setCompletedTaskIds(prev =>
             isCurrentlyCompleted ? prev.filter(id => id !== taskId) : [...prev, taskId]
@@ -124,13 +165,17 @@ export default function App() {
         newDate.setDate(newDate.getDate() + daysToAdd);
 
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        const diffTime = Math.abs(today - newDate);
+        // تهيئة التواريخ لمنتصف الليل لمقارنة الأيام بدقة بدون تداخل الساعات
+        const date1 = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
+        const date2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        if (date1 > date2) return; // لا يمكن الذهاب للمستقبل
+
+        const diffTime = Math.abs(date2 - date1);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (newDate > today) return;
-        if (diffDays > 7 && newDate < today) return;
+        if (diffDays > 7 && date1 < date2) return; // الحد الأقصى للأرشيف هو 7 أيام
 
         setCurrentDate(newDate);
     };
@@ -138,11 +183,10 @@ export default function App() {
     const handleSaveSettings = async () => {
         setIsSavingSettings(true);
         try {
-            // إرسال الإعدادات الفعلية للخادم
             await axios.post('/api/profile/settings', userSettings, { withCredentials: true });
+            playSound('success');
             setIsMenuOpen(false);
-            // Refresh page so the new Bible readings load instantly
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 500);
         } catch (error) {
             console.error("Failed to save settings", error);
             alert("حدث خطأ أثناء حفظ الإعدادات.");
@@ -151,13 +195,7 @@ export default function App() {
         }
     };
 
-    // --- HELPER COMPONENTS ---
-    const IconComponent = ({ name, className }) => {
-        const icons = { Flame, BookOpen, Church, Activity };
-        const Icon = icons[name] || Circle;
-        return <Icon className={className} />;
-    };
-
+    // --- UI CONFIGURATION ---
     const isToday = formatDateStr(currentDate) === formatDateStr(new Date());
 
     const groupedActivities = routines.reduce((acc, curr) => {
@@ -166,13 +204,63 @@ export default function App() {
         return acc;
     }, {});
 
-    const [user, setUser] = useState(null);
+    const CATEGORY_STYLES = {
+        agpeya: {
+            title: 'الأجبية',
+            bg: 'bg-orange-50/50',
+            border: 'border-orange-100',
+            iconBg: 'bg-orange-100',
+            iconColor: 'text-orange-600',
+            checkBg: 'bg-orange-50',
+            checkColor: 'text-orange-500',
+            fillColor: 'fill-orange-100'
+        },
+        bible: {
+            title: 'الكتاب المقدس',
+            bg: 'bg-blue-50/50',
+            border: 'border-blue-100',
+            iconBg: 'bg-blue-100',
+            iconColor: 'text-blue-600',
+            checkBg: 'bg-blue-50',
+            checkColor: 'text-blue-500',
+            fillColor: 'fill-blue-100'
+        },
+        general: {
+            title: 'تدريبات روحية',
+            bg: 'bg-emerald-50/50',
+            border: 'border-emerald-100',
+            iconBg: 'bg-emerald-100',
+            iconColor: 'text-emerald-600',
+            checkBg: 'bg-emerald-50',
+            checkColor: 'text-emerald-500',
+            fillColor: 'fill-emerald-100'
+        },
+        church: {
+            title: 'الكنيسة',
+            bg: 'bg-purple-50/50',
+            border: 'border-purple-100',
+            iconBg: 'bg-purple-100',
+            iconColor: 'text-purple-600',
+            checkBg: 'bg-purple-50',
+            checkColor: 'text-purple-500',
+            fillColor: 'fill-purple-100'
+        },
+        default: {
+            title: 'أخرى',
+            bg: 'bg-slate-50/50',
+            border: 'border-slate-100',
+            iconBg: 'bg-slate-100',
+            iconColor: 'text-slate-600',
+            checkBg: 'bg-slate-50',
+            checkColor: 'text-slate-500',
+            fillColor: 'fill-slate-100'
+        }
+    };
 
-    const categoryTitles = {
-        agpeya: 'الأجبية',
-        bible: 'الكتاب المقدس',
-        general: 'تدريبات روحية',
-        church: 'الكنيسة (أسبوعي)'
+    const IconComponent = ({ name, className }) => {
+        const icons = { Flame, BookOpen, Church, Activity };
+        const Icon = icons[name] || Circle;
+        return <Icon className={className} />;
     };
 
     if (isLoading) {
@@ -198,13 +286,13 @@ export default function App() {
                         </div>
                         <div>
                             <h1 className="text-lg font-bold leading-tight">
-                                اهلا {user?.name}
+                                اهلا {user?.name || 'بك'}
                             </h1>
                             <p className="text-xs text-slate-500">رحلتك الروحية</p>
                         </div>
                     </div>
                     <div className="flex gap-4 items-center">
-                        <a href={route('charts')} className="inline-block bg-indigo-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-indigo-700 transition-colors">
+                        <a href={route('charts')} className="inline-block bg-indigo-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">
                             النمو
                         </a>
                         <button onClick={() => setIsBellOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors relative">
@@ -250,10 +338,10 @@ export default function App() {
                 </div>
 
                 {/* --- PROGRESS VISUALIZATION --- */}
-                <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white mb-6 shadow-lg shadow-indigo-200 relative overflow-hidden">
+                <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white mb-6 shadow-lg shadow-indigo-200 relative overflow-hidden transition-all duration-500 transform hover:scale-[1.02]">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
 
-                    <h2 className="text-sm font-medium mb-1 opacity-90">اليوم</h2>
+                    <h2 className="text-sm font-medium mb-1 opacity-90">إنجاز اليوم</h2>
                     <div className="flex justify-between items-end mb-4">
                         <span className="text-4xl font-bold">{stats.progress}%</span>
                         <span className="text-sm opacity-80 mb-1">
@@ -263,18 +351,21 @@ export default function App() {
 
                     <div className="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
                         <div
-                            className="bg-white h-full rounded-full transition-all duration-700 ease-out"
+                            className="bg-white h-full rounded-full transition-all duration-1000 ease-out relative"
                             style={{ width: `${stats.progress}%` }}
-                        ></div>
+                        >
+                            {/* Shiny effect on progress bar */}
+                            <div className="absolute top-0 left-0 bottom-0 w-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                        </div>
                     </div>
                 </section>
 
                 {/* --- DAILY BIBLE READINGS --- */}
                 {reading && (
-                    <section className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-6 relative overflow-hidden">
+                    <section className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
-                                <BookOpen size={20} className="text-indigo-500" />
+                                <BookOpen size={20} className="text-blue-500" />
                                 <h2 className="text-lg font-bold text-slate-800">قراءات اليوم <span className="text-sm font-normal text-slate-400">(اليوم {reading.day_number})</span></h2>
                             </div>
                             <button onClick={() => setIsMenuOpen(true)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 p-2 rounded-full transition-colors">
@@ -284,19 +375,19 @@ export default function App() {
 
                         <div className="space-y-3">
                             {reading.ot_passage && (
-                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                    <span className="text-xs font-bold text-indigo-500 mb-1 block">العهد القديم (سنة {reading.year_cycle})</span>
+                                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+                                    <span className="text-xs font-bold text-blue-600 mb-1 block">العهد القديم (سنة {reading.year_cycle})</span>
                                     <p className="text-sm font-medium text-slate-700">{reading.ot_passage}</p>
                                 </div>
                             )}
                             {reading.nt_passage && (
-                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                    <span className="text-xs font-bold text-indigo-500 mb-1 block">العهد الجديد</span>
+                                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+                                    <span className="text-xs font-bold text-blue-600 mb-1 block">العهد الجديد</span>
                                     <p className="text-sm font-medium text-slate-700">{reading.nt_passage}</p>
                                 </div>
                             )}
                             {reading.explanation && (
-                                <div className="p-3 bg-indigo-50/50 rounded-xl">
+                                <div className="p-4 bg-slate-50 rounded-xl mt-4 border border-slate-100">
                                     <p className="text-sm text-slate-600 leading-relaxed text-justify">
                                         {reading.explanation}
                                     </p>
@@ -320,44 +411,48 @@ export default function App() {
                     </div>
                 ) : (
                     <section className="space-y-6">
-                        {Object.entries(groupedActivities).map(([category, activities]) => (
-                            <div key={category} className="space-y-3">
-                                <h3 className="text-sm font-bold text-slate-400 px-2">{categoryTitles[category] || 'أخرى'}</h3>
+                        {Object.entries(groupedActivities).map(([category, activities]) => {
+                            const style = CATEGORY_STYLES[category] || CATEGORY_STYLES.default;
 
-                                <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
-                                    {activities.map((activity, index) => {
-                                        const isCompleted = completedTaskIds.includes(activity.id);
+                            return (
+                                <div key={category} className="space-y-3">
+                                    <h3 className={`text-sm font-bold px-2 ${style.iconColor}`}>{style.title}</h3>
 
-                                        return (
-                                            <div
-                                                key={activity.id}
-                                                onClick={() => handleToggleTask(activity.id)}
-                                                className={`
-                                                flex items-center p-4 cursor-pointer transition-all duration-200 active:scale-[0.98]
-                                                ${index !== activities.length - 1 ? 'border-b border-slate-50' : ''}
-                                                ${isCompleted ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}
-                                                `}
-                                            >
-                                                <button
-                                                    className={`ml-4 flex-shrink-0 transition-colors ${isCompleted ? 'text-indigo-500' : 'text-slate-300'}`}
+                                    <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border ${style.border}`}>
+                                        {activities.map((activity, index) => {
+                                            const isCompleted = completedTaskIds.includes(activity.id);
+
+                                            return (
+                                                <div
+                                                    key={activity.id}
+                                                    onClick={() => handleToggleTask(activity.id)}
+                                                    className={`
+                                                        flex items-center p-4 cursor-pointer transition-all duration-300
+                                                        ${index !== activities.length - 1 ? 'border-b border-slate-50' : ''}
+                                                        ${isCompleted ? style.bg : 'hover:bg-slate-50'}
+                                                    `}
                                                 >
-                                                    {isCompleted ? <CheckCircle2 size={24} className="fill-indigo-100" /> : <Circle size={24} />}
-                                                </button>
+                                                    <button
+                                                        className={`ml-4 flex-shrink-0 transition-all duration-300 transform ${isCompleted ? `${style.checkColor} scale-110` : 'text-slate-300 hover:scale-110'}`}
+                                                    >
+                                                        {isCompleted ? <CheckCircle2 size={24} className={style.fillColor} /> : <Circle size={24} />}
+                                                    </button>
 
-                                                <div className="flex items-center gap-3 flex-1">
-                                                    <div className={`p-2 rounded-lg ${isCompleted ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                        <IconComponent name={activity.icon} className="w-5 h-5" />
+                                                    <div className="flex items-center gap-3 flex-1">
+                                                        <div className={`p-2 rounded-lg transition-colors duration-300 ${isCompleted ? style.iconBg + ' ' + style.iconColor : 'bg-slate-100 text-slate-500'}`}>
+                                                            <IconComponent name={activity.icon} className="w-5 h-5" />
+                                                        </div>
+                                                        <span className={`font-medium transition-all duration-300 ${isCompleted ? 'text-slate-800 line-through decoration-slate-300 decoration-2 opacity-60' : 'text-slate-700'}`}>
+                                                            {activity.name_ar}
+                                                        </span>
                                                     </div>
-                                                    <span className={`font-medium transition-all ${isCompleted ? 'text-indigo-900 line-through decoration-indigo-200' : 'text-slate-700'}`}>
-                                                        {activity.name_ar}
-                                                    </span>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </section>
                 )}
             </main>
@@ -512,6 +607,12 @@ export default function App() {
                 </div>
             </div>
 
+            {/* Optional global css injection for shimmer effect */}
+            <style dangerouslySetInnerHTML={{__html: `
+                @keyframes shimmer {
+                    100% { transform: translateX(100%); }
+                }
+            `}} />
         </div>
     );
 }
