@@ -277,10 +277,10 @@ export default function App() {
                             م
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold leading-tight">
+                            <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-slate-900">
                                 اهلا {user?.name || 'بك'}
                             </h1>
-                            <p className="text-xs text-slate-500">رحلتك الروحية</p>
+                            <p className="text-sm text-slate-500 font-medium">رحلتك الروحية</p>
                         </div>
                     </div>
                     <div className="flex gap-4 items-center">
@@ -358,7 +358,7 @@ export default function App() {
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <BookOpen size={20} className="text-blue-500" />
-                                <h2 className="text-lg font-bold text-slate-800">قراءات اليوم <span className="text-sm font-normal text-slate-400">(اليوم {reading.day_number})</span></h2>
+                                <h2 className="text-xl font-extrabold text-slate-900">قراءات اليوم <span className="text-sm font-normal text-slate-400">(اليوم {reading.day_number})</span></h2>
                             </div>
                             <button onClick={() => setIsMenuOpen(true)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 p-2 rounded-full transition-colors">
                                 <Settings2 size={16} />
@@ -408,7 +408,7 @@ export default function App() {
 
                             return (
                                 <div key={category} className="space-y-3">
-                                    <h3 className={`text-sm font-bold px-2 ${style.iconColor}`}>{style.title}</h3>
+                                    <h3 className={`text-base font-extrabold px-2 tracking-wide ${style.iconColor}`}>{style.title}</h3>
 
                                     <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border ${style.border}`}>
                                         {activities.map((activity, index) => {
@@ -434,7 +434,7 @@ export default function App() {
                                                         <div className={`p-2 rounded-lg transition-colors duration-300 ${isCompleted ? style.iconBg + ' ' + style.iconColor : 'bg-slate-100 text-slate-500'}`}>
                                                             <IconComponent name={activity.icon} className="w-5 h-5" />
                                                         </div>
-                                                        <span className={`font-medium transition-all duration-300 ${isCompleted ? 'text-slate-800 line-through decoration-slate-300 decoration-2 opacity-60' : 'text-slate-700'}`}>
+                                                        <span className={`text-[15px] font-semibold transition-all duration-300 ${isCompleted ? 'text-slate-800 line-through decoration-slate-300 decoration-2 opacity-60' : 'text-slate-700'}`}>
                                                             {activity.name_ar}
                                                         </span>
                                                     </div>
