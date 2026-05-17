@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, BarChart3, Flame, BookOpen, Church, Activity, TrendingUp, AlertTriangle, Calendar, Settings2 } from 'lucide-react';
 import axios from 'axios';
-
-// --- Mocks for Canvas Preview ---
-// (In production, replace these with Inertia imports if needed)
-const Head = ({ title }) => {
-    useEffect(() => { document.title = title; }, [title]);
-    return null;
-};
-const Link = ({ href, children, className }) => (
-    <a href={href} className={className}>{children}</a>
-);
+import { Head, Link } from '@inertiajs/react';
 
 // --- Icon Matcher ---
 const IconComponent = ({ name, className }) => {
@@ -200,6 +191,7 @@ export default function Charts() {
                                 cy={p.y}
                                 r="4"
                                 className="fill-white stroke-indigo-500 stroke-[3px] hover:r-6 hover:stroke-purple-500 transition-all cursor-pointer animate-pop-in cursor-crosshair"
+                                style={{ animationDelay: `${(idx * 0.05) + 0.5}s` }}
                             >
                                 <title>{`${p.label}: ${p.value}%`}</title>
                             </circle>
@@ -382,7 +374,7 @@ export default function Charts() {
     );
 }
 
-// --- Helper for Preview ---
+// --- Helper for Fallback ---
 function generateMockData(range) {
     const activities = [
         { id: 1, name_ar: 'صلاة باكر', icon: 'Flame' },
