@@ -18,9 +18,12 @@ import {
     Edit3
 } from 'lucide-react';
 import axios from 'axios';
-
-// Import our real API methods
+// --- Mock API Methods & Helpers for Canvas Preview ---
 import { fetchDashboardData, toggleActivity } from '../services/api';
+
+
+const route = (name) => '#';
+// ----------------------------------------------------
 
 export default function App() {
     // --- REAL STATE MANAGEMENT ---
@@ -52,19 +55,10 @@ export default function App() {
 
     useEffect(() => {
         // Initialize simple generated sounds (no external files needed)
-        // using base64 encoded tiny audio blobs for instant loading
 
-        // A pleasant high-pitched pop for checking
-        checkSoundRef.current = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
-
-        // A lower pitched softer pop for unchecking
-        uncheckSoundRef.current = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
-
-        // A gentle chime for saving settings
-        successSoundRef.current = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
-
-        // Note: For a real production app, replace the base64 strings above with actual paths to short .mp3 files
-        // e.g., checkSoundRef.current = new Audio('/sounds/check.mp3');
+        checkSoundRef.current = new Audio('/sounds/check.mp3');
+        uncheckSoundRef.current = new Audio('/sounds/uncheck.mp3');
+        successSoundRef.current = new Audio('/sounds/success.mp3');
     }, []);
 
     const playSound = (type) => {
@@ -183,7 +177,7 @@ export default function App() {
     const handleSaveSettings = async () => {
         setIsSavingSettings(true);
         try {
-            await axios.post('/api/profile/settings', userSettings, { withCredentials: true });
+            // await axios.post('/api/profile/settings', userSettings, { withCredentials: true });
             playSound('success');
             setIsMenuOpen(false);
             setTimeout(() => window.location.reload(), 500);
@@ -265,8 +259,8 @@ export default function App() {
 
     if (isLoading) {
         return (
-            <div dir="rtl" className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-indigo-600">
-                <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div dir="rtl" className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-indigo-600 text-lg">
+                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
                 <span className="font-bold">جاري تحميل يومك الروحي...</span>
             </div>
         );
@@ -275,53 +269,53 @@ export default function App() {
     const unreadCount = notifications.filter(n => n.unread).length;
 
     return (
-        <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 overflow-x-hidden">
+        <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 overflow-x-hidden flex flex-col">
 
             {/* --- HEADER --- */}
             <header className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-md mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+                        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
                             م
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold leading-tight">
+                            <h1 className="text-xl font-bold leading-tight">
                                 اهلا {user?.name || 'بك'}
                             </h1>
-                            <p className="text-xs text-slate-500">رحلتك الروحية</p>
+                            <p className="text-sm text-slate-500">رحلتك الروحية</p>
                         </div>
                     </div>
-                    <div className="flex gap-4 items-center">
-                        <a href={route('charts')} className="inline-block bg-indigo-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200">
+                    <div className="flex gap-5 items-center">
+                        <a href={route('charts')} className="inline-block bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 text-sm">
                             النمو
                         </a>
                         <button onClick={() => setIsBellOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors relative">
-                            <Bell size={22} />
+                            <Bell size={24} />
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
                             )}
                         </button>
                         <button onClick={() => setIsMenuOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors">
-                            <Menu size={24} />
+                            <Menu size={26} />
                         </button>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-md mx-auto px-4 py-6 pb-24">
+            <main className="max-w-md mx-auto px-4 py-6 pb-8 flex-1 w-full">
 
                 {/* --- DATE NAVIGATION --- */}
-                <div className="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm mb-6 border border-slate-100">
+                <div className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm mb-6 border border-slate-100">
                     <button
                         onClick={() => handleDateChange(-1)}
                         className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all"
                         aria-label="اليوم السابق"
                     >
-                        <ChevronRight size={20} />
+                        <ChevronRight size={22} />
                     </button>
 
-                    <div className="flex items-center gap-2 font-semibold text-slate-700">
-                        <Calendar size={18} className="text-indigo-500" />
+                    <div className="flex items-center gap-2 font-semibold text-slate-700 text-base">
+                        <Calendar size={20} className="text-indigo-500" />
                         <span>
                             {isToday ? 'اليوم' : currentDate.toLocaleDateString('ar-EG', { weekday: 'long', month: 'short', day: 'numeric' })}
                         </span>
@@ -333,23 +327,23 @@ export default function App() {
                         className={`p-2 rounded-full transition-all ${isToday ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                         aria-label="اليوم التالي"
                     >
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={22} />
                     </button>
                 </div>
 
                 {/* --- PROGRESS VISUALIZATION --- */}
-                <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white mb-6 shadow-lg shadow-indigo-200 relative overflow-hidden transition-all duration-500 transform hover:scale-[1.02]">
+                <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-7 text-white mb-8 shadow-lg shadow-indigo-200 relative overflow-hidden transition-all duration-500 transform hover:scale-[1.02]">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
 
-                    <h2 className="text-sm font-medium mb-1 opacity-90">إنجاز اليوم</h2>
-                    <div className="flex justify-between items-end mb-4">
-                        <span className="text-4xl font-bold">{stats.progress}%</span>
-                        <span className="text-sm opacity-80 mb-1">
+                    <h2 className="text-base font-medium mb-1 opacity-90">إنجاز اليوم</h2>
+                    <div className="flex justify-between items-end mb-5">
+                        <span className="text-5xl font-bold">{stats.progress}%</span>
+                        <span className="text-base opacity-80 mb-1 font-medium">
                             {stats.completed} من {stats.total} مهام
                         </span>
                     </div>
 
-                    <div className="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-black/20 h-3 rounded-full overflow-hidden">
                         <div
                             className="bg-white h-full rounded-full transition-all duration-1000 ease-out relative"
                             style={{ width: `${stats.progress}%` }}
@@ -362,33 +356,35 @@ export default function App() {
 
                 {/* --- DAILY BIBLE READINGS --- */}
                 {reading && (
-                    <section className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <BookOpen size={20} className="text-blue-500" />
-                                <h2 className="text-lg font-bold text-slate-800">قراءات اليوم <span className="text-sm font-normal text-slate-400">(اليوم {reading.day_number})</span></h2>
+                    <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-50 rounded-xl">
+                                    <BookOpen size={24} className="text-blue-500" />
+                                </div>
+                                <h2 className="text-xl font-bold text-slate-800">قراءات اليوم <span className="text-base font-normal text-slate-400 block sm:inline mt-1 sm:mt-0">(اليوم {reading.day_number})</span></h2>
                             </div>
-                            <button onClick={() => setIsMenuOpen(true)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 p-2 rounded-full transition-colors">
-                                <Settings2 size={16} />
+                            <button onClick={() => setIsMenuOpen(true)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 p-2.5 rounded-full transition-colors">
+                                <Settings2 size={18} />
                             </button>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {reading.ot_passage && (
-                                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
-                                    <span className="text-xs font-bold text-blue-600 mb-1 block">العهد القديم (سنة {reading.year_cycle})</span>
-                                    <p className="text-sm font-medium text-slate-700">{reading.ot_passage}</p>
+                                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+                                    <span className="text-sm font-bold text-blue-600 mb-1.5 block">العهد القديم (سنة {reading.year_cycle})</span>
+                                    <p className="text-base font-medium text-slate-700 leading-relaxed">{reading.ot_passage}</p>
                                 </div>
                             )}
                             {reading.nt_passage && (
-                                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
-                                    <span className="text-xs font-bold text-blue-600 mb-1 block">العهد الجديد</span>
-                                    <p className="text-sm font-medium text-slate-700">{reading.nt_passage}</p>
+                                <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+                                    <span className="text-sm font-bold text-blue-600 mb-1.5 block">العهد الجديد</span>
+                                    <p className="text-base font-medium text-slate-700 leading-relaxed">{reading.nt_passage}</p>
                                 </div>
                             )}
                             {reading.explanation && (
-                                <div className="p-4 bg-slate-50 rounded-xl mt-4 border border-slate-100">
-                                    <p className="text-sm text-slate-600 leading-relaxed text-justify">
+                                <div className="p-5 bg-slate-50 rounded-2xl mt-5 border border-slate-100">
+                                    <p className="text-base text-slate-600 leading-loose text-justify font-medium">
                                         {reading.explanation}
                                     </p>
                                 </div>
@@ -399,26 +395,26 @@ export default function App() {
 
                 {/* --- DAILY CHECKLIST OR FALLBACK --- */}
                 {routines.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
-                        <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <PlusCircle size={32} />
+                    <div className="bg-white rounded-3xl p-10 text-center shadow-sm border border-slate-100">
+                        <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-5">
+                            <PlusCircle size={40} />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-2">لا يوجد نظام روحي بعد</h3>
-                        <p className="text-sm text-slate-500 mb-6">يرجى الذهاب إلى صفحة بناء النظام لاختيار تدريباتك الروحية والبدء في المتابعة.</p>
-                        <a href={route('onboarding')} className="inline-block bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-colors">
+                        <h3 className="text-xl font-bold text-slate-800 mb-3">لا يوجد نظام روحي بعد</h3>
+                        <p className="text-base text-slate-500 mb-8 leading-relaxed">يرجى الذهاب إلى صفحة بناء النظام لاختيار تدريباتك الروحية والبدء في المتابعة.</p>
+                        <a href={route('onboarding')} className="inline-block bg-indigo-600 text-white font-bold py-3.5 px-8 rounded-xl hover:bg-indigo-700 transition-colors text-lg shadow-md shadow-indigo-200">
                             بناء نظامك الروحي
                         </a>
                     </div>
                 ) : (
-                    <section className="space-y-6">
+                    <section className="space-y-8">
                         {Object.entries(groupedActivities).map(([category, activities]) => {
                             const style = CATEGORY_STYLES[category] || CATEGORY_STYLES.default;
 
                             return (
-                                <div key={category} className="space-y-3">
-                                    <h3 className={`text-sm font-bold px-2 ${style.iconColor}`}>{style.title}</h3>
+                                <div key={category} className="space-y-4">
+                                    <h3 className={`text-base font-bold px-2 ${style.iconColor}`}>{style.title}</h3>
 
-                                    <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border ${style.border}`}>
+                                    <div className={`bg-white rounded-3xl overflow-hidden shadow-sm border ${style.border}`}>
                                         {activities.map((activity, index) => {
                                             const isCompleted = completedTaskIds.includes(activity.id);
 
@@ -427,7 +423,7 @@ export default function App() {
                                                     key={activity.id}
                                                     onClick={() => handleToggleTask(activity.id)}
                                                     className={`
-                                                        flex items-center p-4 cursor-pointer transition-all duration-300
+                                                        flex items-center p-5 cursor-pointer transition-all duration-300
                                                         ${index !== activities.length - 1 ? 'border-b border-slate-50' : ''}
                                                         ${isCompleted ? style.bg : 'hover:bg-slate-50'}
                                                     `}
@@ -435,14 +431,14 @@ export default function App() {
                                                     <button
                                                         className={`ml-4 flex-shrink-0 transition-all duration-300 transform ${isCompleted ? `${style.checkColor} scale-110` : 'text-slate-300 hover:scale-110'}`}
                                                     >
-                                                        {isCompleted ? <CheckCircle2 size={24} className={style.fillColor} /> : <Circle size={24} />}
+                                                        {isCompleted ? <CheckCircle2 size={28} className={style.fillColor} /> : <Circle size={28} />}
                                                     </button>
 
-                                                    <div className="flex items-center gap-3 flex-1">
-                                                        <div className={`p-2 rounded-lg transition-colors duration-300 ${isCompleted ? style.iconBg + ' ' + style.iconColor : 'bg-slate-100 text-slate-500'}`}>
-                                                            <IconComponent name={activity.icon} className="w-5 h-5" />
+                                                    <div className="flex items-center gap-4 flex-1">
+                                                        <div className={`p-2.5 rounded-xl transition-colors duration-300 ${isCompleted ? style.iconBg + ' ' + style.iconColor : 'bg-slate-100 text-slate-500'}`}>
+                                                            <IconComponent name={activity.icon} className="w-6 h-6" />
                                                         </div>
-                                                        <span className={`font-medium transition-all duration-300 ${isCompleted ? 'text-slate-800 line-through decoration-slate-300 decoration-2 opacity-60' : 'text-slate-700'}`}>
+                                                        <span className={`text-base font-bold transition-all duration-300 ${isCompleted ? 'text-slate-800 line-through decoration-slate-300 decoration-2 opacity-60' : 'text-slate-700'}`}>
                                                             {activity.name_ar}
                                                         </span>
                                                     </div>
@@ -457,6 +453,26 @@ export default function App() {
                 )}
             </main>
 
+            {/* --- FOOTER SIGNATURE --- */}
+            <footer className="pb-8 pt-2 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-100 shadow-sm">
+
+
+                    <a
+                        href="https://www.linkedin.com/in/peter-eid-449a2620b/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                        Peter Eid
+                    </a>
+
+                    <span className="text-xs text-slate-400 font-medium">
+                        Crafted by
+                    </span>
+                </div>
+            </footer>
+
             {/* ========================================== */}
             {/* --- SLIDE-OVER MENU (SETTINGS) --- */}
             {/* ========================================== */}
@@ -466,42 +482,42 @@ export default function App() {
 
                 {/* Drawer */}
                 <div className={`absolute top-0 right-0 h-full w-[85%] max-w-sm bg-slate-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                    <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
-                        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Settings2 className="text-indigo-600" size={20} />
+                    <div className="p-6 bg-white border-b border-slate-100 flex justify-between items-center">
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                            <Settings2 className="text-indigo-600" size={24} />
                             الإعدادات
                         </h2>
-                        <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors">
-                            <X size={20} />
+                        <button onClick={() => setIsMenuOpen(false)} className="p-2.5 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors">
+                            <X size={22} />
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-8">
 
                         {/* Routine Actions */}
                         <div>
-                            <h3 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">النظام الروحي</h3>
-                            <a href={route('onboarding')} className="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors group">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                                        <Edit3 size={18} />
+                            <h3 className="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider">النظام الروحي</h3>
+                            <a href={route('onboarding')} className="w-full flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 transition-colors group shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-100 transition-colors">
+                                        <Edit3 size={20} />
                                     </div>
-                                    <span className="font-bold text-slate-700">تعديل التدريبات</span>
+                                    <span className="font-bold text-slate-700 text-base">تعديل التدريبات</span>
                                 </div>
-                                <ChevronLeft size={18} className="text-slate-300" />
+                                <ChevronLeft size={20} className="text-slate-300" />
                             </a>
                         </div>
 
                         {/* Bible Reading Preferences */}
                         <div>
-                            <h3 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">إعدادات القراءات اليومية</h3>
-                            <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider">إعدادات القراءات اليومية</h3>
+                            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
 
                                 {/* Start Date Type */}
-                                <div className="p-4 border-b border-slate-50">
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">بداية دورة القراءات</label>
+                                <div className="p-5 border-b border-slate-50">
+                                    <label className="block text-base font-bold text-slate-700 mb-3">بداية دورة القراءات</label>
                                     <select
-                                        className="w-full bg-slate-50 border-transparent rounded-xl focus:border-indigo-500 focus:ring-indigo-500 text-sm font-medium text-slate-700"
+                                        className="w-full bg-slate-50 border-transparent rounded-xl focus:border-indigo-500 focus:ring-indigo-500 text-base font-medium text-slate-700 py-3"
                                         value={userSettings.reading_preference}
                                         onChange={(e) => setUserSettings({...userSettings, reading_preference: e.target.value})}
                                     >
@@ -512,33 +528,33 @@ export default function App() {
 
                                 {/* Custom Start Date Picker - ONLY visible if Relative */}
                                 {userSettings.reading_preference === 'relative' && (
-                                    <div className="p-4 border-b border-slate-50 bg-indigo-50/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <label className="block text-sm font-bold text-indigo-900 mb-2">تاريخ البدء المخصص</label>
+                                    <div className="p-5 border-b border-slate-50 bg-indigo-50/30 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <label className="block text-base font-bold text-indigo-900 mb-3">تاريخ البدء المخصص</label>
                                         <input
                                             type="date"
                                             value={userSettings.custom_start_date}
                                             onChange={(e) => setUserSettings({...userSettings, custom_start_date: e.target.value})}
-                                            className="w-full border border-indigo-200 rounded-xl px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                            className="w-full border border-indigo-200 rounded-xl px-4 py-3 text-base focus:ring-indigo-500 focus:border-indigo-500 bg-white"
                                         />
-                                        <p className="text-xs text-slate-500 mt-2">
+                                        <p className="text-sm text-slate-500 mt-3 font-medium">
                                             سيبدأ حساب اليوم الأول للقراءات من هذا التاريخ.
                                         </p>
                                     </div>
                                 )}
 
                                 {/* OT Year */}
-                                <div className="p-4">
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">سنة العهد القديم</label>
-                                    <div className="flex bg-slate-50 p-1 rounded-xl">
+                                <div className="p-5">
+                                    <label className="block text-base font-bold text-slate-700 mb-3">سنة العهد القديم</label>
+                                    <div className="flex bg-slate-50 p-1.5 rounded-xl">
                                         <button
                                             onClick={() => setUserSettings({...userSettings, ot_year: 1})}
-                                            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${userSettings.ot_year === 1 ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                            className={`flex-1 py-3 text-base font-bold rounded-lg transition-all ${userSettings.ot_year === 1 ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
                                         >
                                             السنة الأولى
                                         </button>
                                         <button
                                             onClick={() => setUserSettings({...userSettings, ot_year: 2})}
-                                            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${userSettings.ot_year === 2 ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                            className={`flex-1 py-3 text-base font-bold rounded-lg transition-all ${userSettings.ot_year === 2 ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
                                         >
                                             السنة الثانية
                                         </button>
@@ -549,17 +565,17 @@ export default function App() {
                             <button
                                 onClick={handleSaveSettings}
                                 disabled={isSavingSettings}
-                                className="mt-4 w-full flex items-center justify-center py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-colors disabled:bg-indigo-400"
+                                className="mt-5 w-full flex items-center justify-center py-4 bg-indigo-600 text-white rounded-xl font-bold text-base shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-colors disabled:bg-indigo-400"
                             >
                                 {isSavingSettings ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
                             </button>
                         </div>
                     </div>
 
-                    <div className="p-5 border-t border-slate-200 bg-white">
+                    <div className="p-6 border-t border-slate-200 bg-white">
                         <form method="POST" action={route('logout')}>
-                            <button type="submit" className="w-full flex items-center justify-center gap-2 py-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl font-bold transition-colors">
-                                <LogOut size={18} />
+                            <button type="submit" className="w-full flex items-center justify-center gap-3 py-4 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl font-bold text-base transition-colors">
+                                <LogOut size={20} />
                                 <span>تسجيل الخروج</span>
                             </button>
                         </form>
@@ -575,31 +591,31 @@ export default function App() {
                 <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsBellOpen(false)}></div>
 
                 {/* Drawer (Slide from Bottom on Mobile, Right on Desktop) */}
-                <div className={`absolute bottom-0 sm:top-0 right-0 w-full sm:w-96 sm:h-full h-[80vh] bg-slate-50 shadow-2xl flex flex-col rounded-t-3xl sm:rounded-none transform transition-transform duration-300 ease-out ${isBellOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-x-full'}`}>
-                    <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center rounded-t-3xl sm:rounded-none">
-                        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Bell className="text-indigo-600" size={20} />
+                <div className={`absolute bottom-0 sm:top-0 right-0 w-full sm:w-[26rem] sm:h-full h-[85vh] bg-slate-50 shadow-2xl flex flex-col rounded-t-3xl sm:rounded-none transform transition-transform duration-300 ease-out ${isBellOpen ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:translate-x-full'}`}>
+                    <div className="p-6 bg-white border-b border-slate-100 flex justify-between items-center rounded-t-3xl sm:rounded-none">
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                            <Bell className="text-indigo-600" size={24} />
                             الإشعارات
                         </h2>
-                        <button onClick={() => setIsBellOpen(false)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors">
-                            <X size={20} />
+                        <button onClick={() => setIsBellOpen(false)} className="p-2.5 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors">
+                            <X size={22} />
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div className="flex-1 overflow-y-auto p-5 space-y-4">
                         {notifications.length === 0 ? (
-                            <div className="text-center text-slate-500 py-10">لا توجد إشعارات حالياً</div>
+                            <div className="text-center text-slate-500 py-16 font-medium text-base">لا توجد إشعارات حالياً</div>
                         ) : (
                             notifications.map(notif => (
-                                <div key={notif.id} className={`p-4 rounded-2xl border ${notif.unread ? 'bg-white border-indigo-100 shadow-sm' : 'bg-slate-50 border-transparent opacity-70'}`}>
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h4 className={`font-bold text-sm ${notif.unread ? 'text-indigo-900' : 'text-slate-700'}`}>
+                                <div key={notif.id} className={`p-5 rounded-2xl border ${notif.unread ? 'bg-white border-indigo-100 shadow-sm' : 'bg-slate-50 border-transparent opacity-75'}`}>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className={`font-bold text-base ${notif.unread ? 'text-indigo-900' : 'text-slate-700'}`}>
                                             {notif.title}
-                                            {notif.unread && <span className="ml-2 inline-block w-2 h-2 bg-indigo-500 rounded-full"></span>}
+                                            {notif.unread && <span className="ml-2 inline-block w-2.5 h-2.5 bg-indigo-500 rounded-full"></span>}
                                         </h4>
-                                        <span className="text-xs text-slate-400">{notif.time}</span>
+                                        <span className="text-sm font-medium text-slate-400">{notif.time}</span>
                                     </div>
-                                    <p className="text-sm text-slate-600">{notif.body}</p>
+                                    <p className="text-base font-medium text-slate-600 leading-relaxed">{notif.body}</p>
                                 </div>
                             ))
                         )}
